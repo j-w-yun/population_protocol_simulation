@@ -18,16 +18,19 @@ class Species:
 
 class Rxn:
 	def __init__(self, reactants, products):
-		self.reactants = reactants
-		self.products = products
-
 		# Convert to species object if string provided
-		for k, v in self.reactants.items():
+		self.reactants = {}
+		for k, v in reactants.items():
 			if not isinstance(k, Species):
 				self.reactants[Species(k)] = v
-		for k, v in self.products.items():
+			else:
+				self.reactants[k] = v
+		self.products = {}
+		for k, v in products.items():
 			if not isinstance(k, Species):
 				self.products[Species(k)] = v
+			else:
+				self.products[k] = v
 
 	def __str__(self):
 		reactants = []
@@ -42,13 +45,14 @@ class Rxn:
 
 class Sim:
 	def __init__(self, species, rxns):
-		self.species = species
-		self.rxns = rxns
-
 		# Convert to species object if string provided
-		for k, v in self.species.items():
+		self.species = {}
+		for k, v in species.items():
 			if not isinstance(k, Species):
 				self.species[Species(k)] = v
+			else:
+				self.species[k] = v
+		self.rxns = rxns
 
 	def __str__(self):
 		species_str = []
@@ -112,7 +116,7 @@ def main():
 			products={'B': 1, 'Bf': 1,}),
 
 		Rxn(reactants={'Af': 1, 'Bf': 1,},
-			products={'T': 1, 'T': 1,}),
+			products={'T': 2,}),
 
 		Rxn(reactants={'A': 1, 'T': 1,},
 			products={'A': 1, 'Af': 1,}),
