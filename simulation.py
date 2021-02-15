@@ -1,5 +1,6 @@
 # Jaewan Yun <jaeyun@ucdavis.edu>
 
+import matplotlib.pyplot as plt
 import random
 
 
@@ -60,6 +61,17 @@ class Sim:
 			species_str.append('{}: {}'.format(k.label, str(v).ljust(4)))
 		return '\n'.join(species_str)
 
+	def count_all(self):
+		species = {}
+		for rxn in self.rxns:
+			for k in rxn.reactants:
+				species[k] = 0
+			for k in rxn.products:
+				species[k] = 0
+		for k, v in self.species.items():
+			species[k] = v
+		return species
+
 	def size(self):
 		t = 0
 		for _, v in self.species.items():
@@ -100,9 +112,10 @@ class Sim:
 
 
 def main():
+	max_steps = 200000
 	init_config = {
-		'A': 10,
-		'B': 10,
+		'A': 101,
+		'B': 100,
 		'T': 0,
 	}
 	rxns = [
@@ -116,7 +129,7 @@ def main():
 			products={'B': 1, 'Bf': 1,}),
 
 		Rxn(reactants={'Af': 1, 'Bf': 1,},
-			products={'T': 2,}),
+			products={'T': 1,}),
 
 		Rxn(reactants={'A': 1, 'T': 1,},
 			products={'A': 1, 'Af': 1,}),
@@ -126,15 +139,43 @@ def main():
 	]
 	sim = Sim(init_config, rxns)
 
-	max_steps = 1000
+	plot_x = [];
+	plot_y = {k: [] for k in sim.count_all()}
+
 	for i in range(max_steps):
+		# Run one step
 		rxn = sim.step()
 		if rxn is not None:
 			print('\nReaction {}: {}'.format(i, rxn))
 			print(sim)
 
+		# Log species count
+		plot_x.append(i)
+		for k, v in sim.count_all().items():
+			plot_y[k].append(v)
+
 	print('\vSimulation complete')
 	print(sim)
+
+	# Cut plot data to time that y changed last
+	last_x = 0
+	for k, v in plot_y.items():
+		for x, y in enumerate(v):
+			if y != v[-1] and x > last_x:
+				last_x = x
+	# Padding
+	last_x = min(last_x+1, len(plot_x))
+
+	# Render plot
+	fig, ax = plt.subplots()
+	for k, v in plot_y.items():
+		ax.plot(plot_x[:last_x], v[:last_x], label=k.label)
+	plt.legend()
+
+	plt.xlabel('Simulation Step', fontsize=18)
+	plt.ylabel('Species Count', fontsize=16)
+	fig.savefig('out.jpg')
+	plt.show()
 
 if __name__ == "__main__":
 	main()
