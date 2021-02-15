@@ -21,6 +21,14 @@ class Rxn:
 		self.reactants = reactants
 		self.products = products
 
+		# Convert to species object if string provided
+		for k, v in self.reactants.items():
+			if not isinstance(k, Species):
+				self.reactants[Species(k)] = v
+		for k, v in self.products.items():
+			if not isinstance(k, Species):
+				self.products[Species(k)] = v
+
 	def __str__(self):
 		reactants = []
 		products = []
@@ -36,6 +44,11 @@ class Sim:
 	def __init__(self, species, rxns):
 		self.species = species
 		self.rxns = rxns
+
+		# Convert to species object if string provided
+		for k, v in self.species.items():
+			if not isinstance(k, Species):
+				self.species[Species(k)] = v
 
 	def __str__(self):
 		species_str = []
@@ -84,65 +97,28 @@ class Sim:
 
 def main():
 	init_config = {
-		Species('A'): 10,
-		Species('B'): 10,
-		Species('T'): 0,
+		'A': 10,
+		'B': 10,
+		'T': 0,
 	}
 	rxns = [
-		Rxn(reactants={
-				Species('A'): 1,
-				Species('B'): 1,
-			},
-			products={
-				Species('Af'): 1,
-				Species('Bf'): 1,
-			}),
+		Rxn(reactants={'A': 1, 'B': 1,},
+			products={'Af': 1, 'Bf': 1,}),
 
-		Rxn(reactants={
-				Species('A'): 1,
-				Species('Bf'): 1,
-			},
-			products={
-				Species('A'): 1,
-				Species('Af'): 1,
-			}),
+		Rxn(reactants={'A': 1, 'Bf': 1,},
+			products={'A': 1, 'Af': 1,}),
 
-		Rxn(reactants={
-				Species('B'): 1,
-				Species('Af'): 1,
-			},
-			products={
-				Species('B'): 1,
-				Species('Bf'): 1,
-			}),
+		Rxn(reactants={'B': 1, 'Af': 1,},
+			products={'B': 1, 'Bf': 1,}),
 
-		Rxn(reactants={
-				Species('Af'): 1,
-				Species('Bf'): 1,
-			},
-			products={
-				Species('T'): 1,
-				Species('T'): 1,
-			}),
+		Rxn(reactants={'Af': 1, 'Bf': 1,},
+			products={'T': 1, 'T': 1,}),
 
-		Rxn(reactants={
-				Species('A'): 1,
-				Species('T'): 1,
-			},
-			products={
-				Species('A'): 1,
-				Species('Af'): 1,
-			}),
+		Rxn(reactants={'A': 1, 'T': 1,},
+			products={'A': 1, 'Af': 1,}),
 
-		Rxn(reactants={
-				Species('B'): 1,
-				Species('T'): 1,
-			},
-			products={
-				Species('B'): 1,
-				Species('Bf'): 1,
-			}),
-
+		Rxn(reactants={'B': 1, 'T': 1,},
+			products={'B': 1, 'Bf': 1,}),
 	]
 	sim = Sim(init_config, rxns)
 
