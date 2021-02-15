@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import random
+import math
 
 
 class Species:
@@ -91,6 +92,9 @@ class Sim:
 		if a == b:
 			return None
 
+		# Shuffle for fairness
+		random.shuffle(self.rxns)
+
 		for rxn in self.rxns:
 			if (a in rxn.reactants and
 				b in rxn.reactants and
@@ -111,33 +115,81 @@ class Sim:
 		return None
 
 
-def main():
-	max_steps = 200000
-	init_config = {
-		'A': 101,
-		'B': 100,
-		'T': 0,
-	}
-	rxns = [
-		Rxn(reactants={'A': 1, 'B': 1,},
-			products={'Af': 1, 'Bf': 1,}),
+rxns = [
+	# Rxn(reactants={'A': 1, 'B': 1,},
+	# 	products={'Af': 1, 'Bf': 1,}),
+	# Rxn(reactants={'A': 1, 'Bf': 1,},
+	# 	products={'A': 1, 'Af': 1,}),
+	# Rxn(reactants={'B': 1, 'Af': 1,},
+	# 	products={'B': 1, 'Bf': 1,}),
+	# Rxn(reactants={'Af': 1, 'Bf': 1,},
+	# 	products={'T': 1,}),
+	# Rxn(reactants={'A': 1, 'T': 1,},
+	# 	products={'A': 1, 'Af': 1,}),
+	# Rxn(reactants={'B': 1, 'T': 1,},
+	# 	products={'B': 1, 'Bf': 1,}),
 
-		Rxn(reactants={'A': 1, 'Bf': 1,},
-			products={'A': 1, 'Af': 1,}),
+	# Rxn(reactants={'A': 1, 'B': 1,},
+	# 	products={'T': 1,}),
+	# Rxn(reactants={'T': 1, 'B': 1,},
+	# 	products={'B': 1,}),
+	# Rxn(reactants={'T': 1, 'A': 1,},
+	# 	products={'A': 1,}),
 
-		Rxn(reactants={'B': 1, 'Af': 1,},
-			products={'B': 1, 'Bf': 1,}),
+	Rxn(reactants={'A': 1, 'B': 1,},
+		products={'A': 1, 'U': 1,}),
+	Rxn(reactants={'B': 1, 'A': 1,},
+		products={'B': 1, 'U': 1,}),
+	Rxn(reactants={'A': 1, 'U': 1,},
+		products={'A': 2,}),
+	Rxn(reactants={'B': 1, 'U': 1,},
+		products={'B': 2,}),
+]
 
-		Rxn(reactants={'Af': 1, 'Bf': 1,},
-			products={'T': 1,}),
 
-		Rxn(reactants={'A': 1, 'T': 1,},
-			products={'A': 1, 'Af': 1,}),
+def simulation():
+	max_steps = 1000000
+	n = 10000
 
-		Rxn(reactants={'B': 1, 'T': 1,},
-			products={'B': 1, 'Bf': 1,}),
-	]
-	sim = Sim(init_config, rxns)
+	sim = Sim({
+		# 'A': 100,
+		# 'B': 100,
+
+		# U = 0
+
+		'A': math.ceil(n/2),
+		'B': math.ceil(n/2),
+
+		# 'A': math.ceil(n/2)+1,
+		# 'B': math.ceil(n/2),
+
+		# 'A': math.ceil(n/3),
+		# 'B': math.ceil(2*n/3),
+
+		# 'A': math.ceil(2*n/3),
+		# 'B': math.ceil(n/3),
+
+		# U > 0
+
+		# 'A': math.ceil(1),
+		# 'B': math.ceil(1),
+		# 'U': math.ceil(n),
+
+		# 'A': math.ceil(0),
+		# 'B': math.ceil(1),
+		# 'U': math.ceil(n),
+
+		# 'A': math.ceil(n/3),
+		# 'B': math.ceil(n/3),
+		# 'U': math.ceil(n/3),
+
+		# 'A': math.ceil(n/2),
+		# 'B': math.ceil(n/4),
+		# 'U': math.ceil(n/4),
+
+		# 'B': math.ceil(n/2),
+		# 'U': math.ceil(n/2),
+	}, rxns)
 
 	plot_x = [];
 	plot_y = {k: [] for k in sim.count_all()}
@@ -145,9 +197,11 @@ def main():
 	for i in range(max_steps):
 		# Run one step
 		rxn = sim.step()
-		if rxn is not None:
-			print('\nReaction {}: {}'.format(i, rxn))
-			print(sim)
+		if i % (max_steps/100):
+			print('{}'.format(i/max_steps))
+		# if rxn is not None:
+		# 	print('\nReaction {}: {}'.format(i, rxn))
+		# 	print(sim)
 
 		# Log species count
 		plot_x.append(i)
@@ -177,5 +231,102 @@ def main():
 	fig.savefig('out.jpg')
 	plt.show()
 
+
+def time_analysis():
+	max_steps = 20000
+	n_start = 0
+	n_end = 1000
+	n_interval = 20
+	n_average = 10
+
+	average_steps = []
+	for n in range(n_start, n_end+n_interval, n_interval):
+		if n == 0:
+			n = 2
+		print('Computing n={}'.format(n))
+
+		last_xs = 0
+		for iteration in range(n_average):
+			print('Iteration {}'.format(iteration))
+
+			sim = Sim({
+
+				# U = 0
+
+				# 'A': math.ceil(n/2),
+				# 'B': math.ceil(n/2),
+
+				# 'A': math.ceil(n/2),
+				# 'B': math.ceil(n/2)+1,
+
+				# 'A': math.ceil(n/3),
+				# 'B': math.ceil(2*n/3),
+
+				# 'A': math.ceil(2*n/3),
+				# 'B': math.ceil(n/3),
+
+				# U > 0
+
+				# 'A': math.ceil(1),
+				# 'B': math.ceil(1),
+				# 'U': math.ceil(n),
+
+				# 'A': math.ceil(0),
+				# 'B': math.ceil(1),
+				# 'U': math.ceil(n),
+
+				# 'A': math.ceil(n/3),
+				# 'B': math.ceil(n/3),
+				# 'U': math.ceil(n/3),
+
+				# 'A': math.ceil(n/2),
+				# 'B': math.ceil(n/4),
+				# 'U': math.ceil(n/4),
+
+				# 'A': math.ceil(0),
+				# 'B': math.ceil(n/2),
+				# 'U': math.ceil(n/2),
+
+				# 'A': math.ceil(n_end-n),
+				# 'B': math.ceil(n),
+
+				'A': math.ceil(n_end-n+1),
+				'U': math.ceil(n)
+			}, rxns)
+
+			plot_x = [];
+			plot_y = {k: [] for k in sim.count_all()}
+
+			for i in range(max_steps):
+				# Run one step
+				rxn = sim.step()
+
+				# Log species count
+				plot_x.append(i)
+				for k, v in sim.count_all().items():
+					plot_y[k].append(v)
+
+			# Cut plot data to time that y changed last
+			last_x = 0
+			for k, v in plot_y.items():
+				for x, y in enumerate(v):
+					if y != v[-1] and x > last_x:
+						last_x = x
+			# Padding
+			last_x = min(last_x+1, len(plot_x))
+			last_xs += last_x
+		# Log the average number of steps taken
+		average_steps.append(last_xs / n_average)
+
+	# Render plot
+	fig, ax = plt.subplots()
+	ax.plot(range(n_start, n_end+n_interval, n_interval), average_steps)
+	plt.xlabel('Count of initial configuration species', fontsize=10)
+	plt.ylabel('Average (n={}) number of steps to terminal configuration'.format(n_average), fontsize=10)
+	fig.savefig('out.jpg')
+	plt.show()
+
+
 if __name__ == "__main__":
-	main()
+	simulation()
+	# time_analysis()
